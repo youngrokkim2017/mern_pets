@@ -1,8 +1,12 @@
 const express = require("express");
+const { MongoClient } = require("mongodb")
+let db
 
 const app = express();
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
+    const allAnimals = await db.collection("animals").find().toArray()
+    console.log(allAnimals)
     res.send("Welcome to home page")
 })
 
@@ -10,4 +14,11 @@ app.get("/admin", (req, res) => {
     res.send("This is the admin page")
 })
 
-app.listen(3000)
+async function start() {
+    const client = new MongoClient("mongodb://root:root@localhost:27017/MernApp?&authSource=admin")
+    await client.connect()
+    db = client.db()
+    app.listen(3000)
+}
+
+start()
