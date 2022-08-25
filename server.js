@@ -3,11 +3,14 @@ const { MongoClient } = require("mongodb")
 let db
 
 const app = express();
+app.set("view engine", "ejs")
+app.set("views", "./views")
 
 app.get("/", async (req, res) => {
     const allAnimals = await db.collection("animals").find().toArray()
     console.log(allAnimals)
-    res.send("Welcome to home page")
+    // res.send("Welcome to home page")
+    res.render("home")
 })
 
 app.get("/admin", (req, res) => {
