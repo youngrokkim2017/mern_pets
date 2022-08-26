@@ -14,7 +14,8 @@ app.get("/", async (req, res) => {
 })
 
 app.get("/admin", (req, res) => {
-    res.send("This is the admin page")
+    // res.send("This is the admin page")
+    res.render("admin")
 })
 
 async function start() {
