@@ -10,7 +10,7 @@ app.get("/", async (req, res) => {
     const allAnimals = await db.collection("animals").find().toArray()
     console.log(allAnimals)
     // res.send("Welcome to home page")
-    res.render("home")
+    res.render("home", {allAnimals})
 })
 
 app.get("/admin", (req, res) => {

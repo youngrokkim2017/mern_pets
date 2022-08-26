@@ -1,1 +1,9 @@
-This is the home page template
+<h1>Welcome to home page</h1>
+
+<ul>
+    <% allAnimals.forEacH((animal) => {
+        <li>
+            <%= animal.name %>
+        </li>
+    }) %>
+</ul>
