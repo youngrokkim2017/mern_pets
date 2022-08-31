@@ -20,6 +20,11 @@ app.get("/admin", (req, res) => {
     res.render("admin")
 })
 
+app.get("/api/animals", async (req, res) => {
+    const allAnimals = await db.collection("animals").find().toArray()
+    res.json(allAnimals)
+})
+
 async function start() {
     const client = new MongoClient("mongodb://root:root@localhost:27017/MernApp?&authSource=admin")
     await client.connect()
