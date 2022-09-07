@@ -1,7 +1,8 @@
 const express = require("express");
-const { MongoClient } = require("mongodb")
+const { MongoClient, ObjectId } = require("mongodb")
 const multer = require("multer")
 const upload = multer() // for letting users upload files
+const sanitizeHTML = require("sanitize-html")
 let db
 
 const app = express();
@@ -44,10 +45,23 @@ app.get("/api/animals", async (req, res) => {
     res.json(allAnimals)
 })
 
-app.post("/create-animal", upload.single("photo"), async (req,res) => {
+app.post("/create-animal", upload.single("photo"),  ourCleanup, async (req,res) => {
     console.log(req.body)
-    res.send("thank you")
+    const info = await db.collection("animals").insertOne(req.cleanData)
+    const newAnimal = await db.collection("animals").findOne({_id: new ObjectId(info.insertedId)})
+    res.send(newAnimal)
 })
+
+function ourCleanup(req, res, next) {
+    if (typeof req.body.name !== "string") req.body.name = ""
+    if (typeof req.body.species !== "string") req.body.species = ""
+    if (typeof req.body._id !== "string") req.body._id = ""
+
+    req.cleanData = {
+        name: sanitizeHTML(rew.body.name.trim(), {allowedTags: [], allowedAttributes: {}}),
+        species: sanitizeHTML(rew.body.species.trim(), {allowedTags: [], allowedAttributes: {}}),
+    }
+}
 
 async function start() {
     const client = new MongoClient("mongodb://root:root@localhost:27017/MernApp?&authSource=admin")
