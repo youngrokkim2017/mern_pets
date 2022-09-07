@@ -8,6 +8,9 @@ app.set("views", "./views")
 
 app.use(express.static("public"))
 
+app.use(express.json())
+spp.use(express.urlencoded({ extended: false }))
+
 function passwordProtected(req, res, next) {
     res.set("WWW-Authenticate", "Basic realm='Our MERN App'")
     if (req.headers.authorization == "Basic YWRtaW46YWRtaW4=") {
@@ -37,6 +40,11 @@ app.get("/admin", (req, res) => {
 app.get("/api/animals", async (req, res) => {
     const allAnimals = await db.collection("animals").find().toArray()
     res.json(allAnimals)
+})
+
+app.post("/create-animal", async (req,res) => {
+    console.log(req.body)
+    res.send("thank you")
 })
 
 async function start() {
