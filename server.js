@@ -1,5 +1,7 @@
 const express = require("express");
 const { MongoClient } = require("mongodb")
+const multer = require("multer")
+const upload = multer() // for letting users upload files
 let db
 
 const app = express();
@@ -42,7 +44,7 @@ app.get("/api/animals", async (req, res) => {
     res.json(allAnimals)
 })
 
-app.post("/create-animal", async (req,res) => {
+app.post("/create-animal", upload.single("photo"), async (req,res) => {
     console.log(req.body)
     res.send("thank you")
 })
