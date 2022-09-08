@@ -70,7 +70,7 @@ app.post("/create-animal", upload.single("photo"),  ourCleanup, async (req,res) 
     res.send(newAnimal)
 })
 
-app.delete("/animal/:id", aync (req, res) => {
+app.delete("/animal/:id", async (req, res) => {
     // check id is a string
     if (typeof req.params.id !== "string") req.params.id = ""
 
@@ -82,6 +82,25 @@ app.delete("/animal/:id", aync (req, res) => {
     
     db.collection("animals").deleteOne({_id: new ObjectId(req.params.id)})
     res.send("Deleted animal")
+})
+
+app.post("/update-animal", upload.single("photo"), ourCleanup, async (req, res) => {
+    if (req.file) {
+        // if uploading a new photo
+        const photoFileName = `${Date.now()}.jpg`
+        await sharp(req.file.buffer).resize(844, 456).jpeg({quality: 60}).toFile(path.join("public", "uploaded-photos", photoFileName))
+        req.cleanData.photo = photoFileName
+        // update database
+        const photoInfo = await db.collection("animals").findOneAndUpdate({_id: new ObjectId(req.body._id)}, {$set: req.cleanData})
+        if (photoInfo.value.photo) {
+            fse.remove(path.join("public", "uploaded-photos", photoInfo.value.photo))
+        }
+        res.send(photoFileName)
+    } else {
+        //  if not uploadeding new photo
+        db.collection("animals").findOneAndUpdate({_id: new ObjectId(req.body._id)}, {$set: req.cleanData})
+        res.send(false)
+    }
 })
 
 function ourCleanup(req, res, next) {
