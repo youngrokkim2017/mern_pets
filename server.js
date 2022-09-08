@@ -3,7 +3,14 @@ const { MongoClient, ObjectId } = require("mongodb")
 const multer = require("multer")
 const upload = multer() // for letting users upload files
 const sanitizeHTML = require("sanitize-html")
+const fse = require("fs-extra")
+const sharp = require("sharp")
+const path = require("path")
+
 let db
+
+// when app launches, check if public/uploaded-photos exists
+fse.ensureDirSync(path.join("public", "uploaded-photos"))
 
 const app = express();
 app.set("view engine", "ejs")
@@ -12,7 +19,7 @@ app.set("views", "./views")
 app.use(express.static("public"))
 
 app.use(express.json())
-spp.use(express.urlencoded({ extended: false }))
+app.use(express.urlencoded({ extended: false }))
 
 function passwordProtected(req, res, next) {
     res.set("WWW-Authenticate", "Basic realm='Our MERN App'")
@@ -46,6 +53,17 @@ app.get("/api/animals", async (req, res) => {
 })
 
 app.post("/create-animal", upload.single("photo"),  ourCleanup, async (req,res) => {
+    if (req.file) {
+        // file is coming from multer
+        const photoFileName = `${Date.now()}.jpg`
+
+        // resize file
+        await sharp(req.file.buffer).resize(844, 456).jpeg({quality: 60}).toFile(path.join("public", "uploaded-photos", photoFileName))
+
+        // add photo to object in database
+        req.cleanData.photo = photoFileName
+    }
+
     console.log(req.body)
     const info = await db.collection("animals").insertOne(req.cleanData)
     const newAnimal = await db.collection("animals").findOne({_id: new ObjectId(info.insertedId)})
