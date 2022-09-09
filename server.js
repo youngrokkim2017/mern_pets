@@ -41,6 +41,7 @@ app.get("/", async (req, res) => {
 
     const generatedHTML = ReactDOMServer.renderToString(
         <div className="container">
+            {!allAnimals.length && <p>There are no animals yet... Please add.</p>}
             <div className="animal-grid mb-3">
                 {allAnimals.map(animal => (
                     <AnimalCard 
