@@ -6,6 +6,10 @@ const sanitizeHTML = require("sanitize-html")
 const fse = require("fs-extra")
 const sharp = require("sharp")
 const path = require("path")
+// packages for server side react
+const React = require('react')
+const ReactDOMServer = require('react-dom/server')
+const AnimalCard = require('./src/components/AnimalCard').default
 
 let db
 
@@ -27,15 +31,35 @@ function passwordProtected(req, res, next) {
         next()
     } else {
         console.log(req.headers.authorization)
-       res.status(401).send("try again")
+        res.status(401).send("try again")
     }
 }
 
 app.get("/", async (req, res) => {
     const allAnimals = await db.collection("animals").find().toArray()
     console.log(allAnimals)
+
+    const generatedHTML = ReactDOMServer.renderToString(
+        <div className="container">
+            <div className="animal-grid mb-3">
+                {allAnimals.map(animal => (
+                    <AnimalCard 
+                        key={animal._id} 
+                        name={animal.name} 
+                        species={animal.species} 
+                        photo={animal.photo} 
+                        id={animal._id} 
+                        readOnly={true}
+                    />
+                ))}
+            </div>
+            <p><a href="/admin">Login / manage animal listing</a></p>
+        </div>
+    )
+
     // res.send("Welcome to home page")
-    res.render("home", {allAnimals})
+    // res.render("home", { allAnimals })
+    res.render("home", { generatedHTML })
 })
 
 // any urls after '/' is password protected
@@ -109,9 +133,11 @@ function ourCleanup(req, res, next) {
     if (typeof req.body._id !== "string") req.body._id = ""
 
     req.cleanData = {
-        name: sanitizeHTML(rew.body.name.trim(), {allowedTags: [], allowedAttributes: {}}),
-        species: sanitizeHTML(rew.body.species.trim(), {allowedTags: [], allowedAttributes: {}}),
+        name: sanitizeHTML(req.body.name.trim(), {allowedTags: [], allowedAttributes: {}}),
+        species: sanitizeHTML(req.body.species.trim(), {allowedTags: [], allowedAttributes: {}}),
     }
+
+    next()
 }
 
 async function start() {
